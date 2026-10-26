@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7fb">
+  <title>Apex Banking | Overview</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172033;
+      --muted: #8790a3;
+      --line: #edf0f5;
+      --paper: #fff;
+      --canvas: #f5f7fb;
+      --blue: #5268e8;
+      --blue-dark: #394fc8;
+      --green: #1da982;
+      --red: #dc6975;
+      --shadow: 0 12px 36px rgba(35, 47, 84, .055);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--canvas);
+      color: var(--ink);
+      font: 14px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    .app { min-height: 100vh; }
+    .sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      z-index: 3;
+      display: flex;
+      width: 244px;
+      flex-direction: column;
+      padding: 28px 18px 20px;
+      background: var(--paper);
+      border-right: 1px solid var(--line);
+    }
+    .brand { display: flex; align-items: center; gap: 11px; padding: 0 10px; color: inherit; text-decoration: none; }
+    .brand-mark {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      color: white;
+      background: linear-gradient(145deg, #7386ff, #485edc);
+      border-radius: 12px;
+      box-shadow: 0 7px 16px #5268e83b;
+    }
+    .brand-name { font-size: 17px; font-weight: 750; letter-spacing: -.5px; }
+    .brand-sub { display: block; margin-top: -2px; color: var(--muted); font-size: 10px; letter-spacing: 1.1px; }
+    .nav-label { padding: 35px 12px 11px; color: #a0a7b5; font-size: 10px; font-weight: 700; letter-spacing: 1.2px; }
+    .nav { display: grid; gap: 5px; scrollbar-width: none; }
+    .nav::-webkit-scrollbar { display: none; }
+    .nav a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 13px;
+      color: #81899a;
+      text-decoration: none;
+      border-radius: 10px;
+      transition: .18s ease;
+    }
+    .nav a:hover, .nav a.active { color: var(--blue); background: #f0f2ff; }
+    .nav a.active { font-weight: 650; }
+    .nav svg, .icon { width: 18px; height: 18px; flex: none; }
+    .sidebar-bottom { margin-top: auto; }
+    .help-card { padding: 15px; background: #f6f7ff; border: 1px solid #ebedff; border-radius: 13px; }
+    .help-card strong { display: block; margin-bottom: 4px; font-size: 12px; }
+    .help-card p { margin: 0 0 12px; color: var(--muted); font-size: 11px; }
+    .help-card button { padding: 0; color: var(--blue); background: none; border: 0; font-size: 11px; font-weight: 700; }
+    .profile { display: flex; align-items: center; gap: 10px; padding: 20px 7px 0; }
+    .avatar { display: grid; width: 36px; height: 36px; place-items: center; color: #4659c7; background: #e8ebff; border-radius: 50%; font-weight: 750; }
+    .profile-name { font-size: 12px; font-weight: 700; }
+    .profile-role { color: var(--muted); font-size: 10px; }
+
+    .main { max-width: 1600px; min-height: 100vh; margin-left: 244px; padding: 0 42px 42px; }
+    .topbar { display: flex; height: 82px; align-items: center; justify-content: space-between; border-bottom: 1px solid #e9ecf2; }
+    .breadcrumb { color: var(--muted); font-size: 12px; }
+    .breadcrumb strong { color: var(--ink); font-weight: 650; }
+    .top-actions { display: flex; align-items: center; gap: 13px; }
+    .preview-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 9px; color: #596bd1; background: #eef0ff; border-radius: 20px; font-size: 10px; font-weight: 700; }
+    .preview-badge::before { width: 6px; height: 6px; background: #7181eb; border-radius: 50%; content: ""; }
+    .icon-button { display: grid; width: 38px; height: 38px; place-items: center; color: #7e8799; background: white; border: 1px solid var(--line); border-radius: 11px; }
+    .today { padding-right: 12px; color: var(--muted); font-size: 11px; }
+    .content { max-width: 1250px; margin: 0 auto; }
+    .welcome { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; padding: 29px 0 23px; }
+    .eyebrow { margin-bottom: 7px; color: var(--blue); font-size: 9px; font-weight: 750; letter-spacing: 1.3px; }
+    h1 { margin: 0; font-size: 25px; letter-spacing: -.8px; }
+    .welcome p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
+    .welcome-actions { display: flex; gap: 9px; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 0 15px; color: #667084; background: white; border: 1px solid #e7eaf1; border-radius: 9px; font-size: 12px; font-weight: 650; transition: .18s ease; }
+    .button:hover { transform: translateY(-1px); box-shadow: 0 5px 14px #26345a12; }
+    .button.primary { color: white; background: var(--blue); border-color: var(--blue); box-shadow: 0 7px 15px #5268e82b; }
+    .button.primary:hover { background: var(--blue-dark); }
+    .button svg { width: 15px; height: 15px; }
+    .grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(300px, 1fr); gap: 18px; }
+    .panel { background: var(--paper); border: 1px solid #eef0f5; border-radius: 15px; box-shadow: var(--shadow); }
+    .balance-card {
+      position: relative;
+      overflow: hidden;
+      min-height: 210px;
+      padding: 24px 27px;
+      color: white;
+      background: linear-gradient(115deg, #5369e8 0%, #6575eb 57%, #8390f3 100%);
+      border-radius: 15px;
+      box-shadow: 0 13px 28px #5268e82c;
+    }
+    .balance-card::after { position: absolute; top: -108px; right: -65px; width: 300px; height: 300px; border: 1px solid #ffffff2b; border-radius: 50%; content: ""; box-shadow: 0 0 0 25px #ffffff0a, 0 0 0 54px #ffffff08; }
+    .balance-card::before { position: absolute; right: 78px; bottom: -170px; width: 270px; height: 270px; background: #ffffff0b; border-radius: 50%; content: ""; }
+    .balance-label { position: relative; z-index: 1; color: #e2e6ff; font-size: 12px; }
+    .balance-number { position: relative; z-index: 1; margin: 8px 0 17px; font-size: clamp(28px, 3vw, 37px); font-weight: 720; letter-spacing: -1.3px; }
+    .balance-top { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .balance-toggle { display: grid; width: 30px; height: 30px; place-items: center; color: #fff; background: #ffffff1a; border: 1px solid #ffffff35; border-radius: 9px; }
+    .balance-toggle:hover { background: #ffffff30; }
+    .balance-foot { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+    .trend { display: inline-flex; align-items: center; gap: 5px; padding: 5px 8px; color: white; background: #ffffff21; border-radius: 20px; font-size: 10px; }
+    .trend-button { border: 0; font-family: inherit; }
+    .trend-button:hover { background: #ffffff35; }
+    .balance-note { color: #e2e6ff; font-size: 10px; }
+    .mini-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+    .stat { padding: 16px 18px; }
+    .stat-label { color: var(--muted); font-size: 11px; }
+    .stat-value { margin-top: 4px; font-size: 19px; font-weight: 720; letter-spacing: -.4px; }
+    .stat-change { margin-top: 2px; color: var(--green); font-size: 10px; }
+    .stat-change.muted { color: var(--muted); }
+    .section-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 19px 20px 14px; }
+    .section-head h2 { margin: 0; font-size: 14px; letter-spacing: -.2px; }
+    .text-link { padding: 0; color: var(--blue); background: none; border: 0; font-size: 11px; font-weight: 650; text-decoration: none; }
+    .accounts { display: grid; gap: 10px; padding: 0 14px 15px; }
+    .account { display: flex; align-items: center; gap: 12px; padding: 13px; border: 1px solid var(--line); border-radius: 11px; }
+    .account-button { width: 100%; color: var(--ink); background: white; text-align: left; transition: .18s ease; }
+    .account-button:hover { border-color: #d9defa; box-shadow: 0 5px 14px #26345a0c; transform: translateY(-1px); }
+    .account-icon { display: grid; width: 38px; height: 38px; place-items: center; color: #5268e8; background: #f0f2ff; border-radius: 11px; }
+    .account-icon.current { color: #c58642; background: #fff5e9; }
+    .account-main { min-width: 0; flex: 1; }
+    .account-name { overflow: hidden; font-size: 11px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+    .account-number { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; }
+    .account-details { flex: none; }
+    .account-balance { text-align: right; font-size: 12px; font-weight: 700; white-space: nowrap; }
+    .account-status { margin-top: 2px; color: var(--green); font-size: 9px; text-align: right; }
+    .chart-panel { margin-top: 18px; }
+    .chart-head { padding-bottom: 3px; }
+    .chart-tools { display: flex; align-items: center; gap: 12px; }
+    .range-tabs { display: flex; gap: 3px; padding: 3px; background: #f5f6fa; border-radius: 8px; }
+    .range-tab { padding: 5px 8px; color: #8790a3; background: transparent; border: 0; border-radius: 6px; font-size: 9px; font-weight: 650; }
+    .range-tab.active { color: var(--blue); background: white; box-shadow: 0 1px 4px #26345a15; }
+    .legend { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 10px; }
+    .legend-dot { width: 7px; height: 7px; background: var(--blue); border-radius: 50%; }
+    .chart-wrap { padding: 0 18px 12px; }
+    .chart { display: block; width: 100%; height: 205px; overflow: visible; }
+    .transactions-panel { margin-top: 18px; }
+    .extras-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 18px; }
+    .loans-panel { margin-top: 18px; }
+    .loan-overview { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(250px, .8fr); gap: 24px; padding: 0 20px 20px; }
+    .loan-card { display: flex; align-items: flex-start; gap: 13px; }
+    .loan-icon { display: grid; width: 42px; height: 42px; flex: none; place-items: center; color: #596bd1; background: #f0f2ff; border-radius: 12px; }
+    .loan-title { font-size: 13px; font-weight: 750; }
+    .loan-number { margin-top: 2px; color: var(--muted); font-size: 10px; }
+    .loan-balance-label { margin-top: 17px; color: var(--muted); font-size: 10px; }
+    .loan-balance { margin-top: 2px; font-size: 24px; font-weight: 750; letter-spacing: -.6px; }
+    .loan-meta { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 11px; }
+    .loan-meta span { color: var(--muted); font-size: 10px; }
+    .loan-meta strong { color: var(--ink); }
+    .loan-repayment { padding: 15px; background: #f8f9fc; border: 1px solid var(--line); border-radius: 12px; }
+    .loan-repayment-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+    .loan-repayment-head strong { font-size: 11px; }
+    .loan-repayment-head span { color: var(--muted); font-size: 9px; }
+    .loan-repayment-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; }
+    .loan-repayment-foot span { color: var(--muted); font-size: 10px; }
+    .loan-repayment-foot .button { min-height: 35px; padding: 0 11px; font-size: 10px; }
+    .extra-panel { min-width: 0; }
+    .budget-body, .goal-body, .bill-list, .card-body { padding: 0 19px 18px; }
+    .budget-amounts { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 2px 0 10px; }
+    .budget-spent { font-size: 22px; font-weight: 750; letter-spacing: -.5px; }
+    .budget-limit { color: var(--muted); font-size: 10px; }
+    .progress-track { height: 8px; overflow: hidden; background: #eef0f5; border-radius: 10px; }
+    .progress-fill { width: 10%; height: 100%; background: linear-gradient(90deg, #6578eb, #8a98f7); border-radius: inherit; transition: width .25s ease; }
+    .budget-caption { margin: 9px 0 0; color: var(--muted); font-size: 10px; }
+    .goal-headline { display: flex; align-items: center; gap: 11px; margin-bottom: 14px; }
+    .goal-icon { display: grid; width: 40px; height: 40px; flex: none; place-items: center; color: #bc8745; background: #fff4e5; border-radius: 12px; }
+    .goal-title { font-size: 12px; font-weight: 700; }
+    .goal-caption { display: block; color: var(--muted); font-size: 10px; }
+    .goal-progress { margin: 10px 0; }
+    .goal-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; }
+    .goal-footer .button { min-height: 34px; padding: 0 10px; font-size: 10px; }
+    .bill-list { display: grid; gap: 9px; }
+    .bill-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+    .bill-row:last-child { padding-bottom: 0; border-bottom: 0; }
+    .bill-icon { display: grid; width: 34px; height: 34px; flex: none; place-items: center; color: #596bd1; background: #f0f2ff; border-radius: 10px; font-size: 11px; font-weight: 750; }
+    .bill-main { min-width: 0; flex: 1; }
+    .bill-name { display: block; font-size: 11px; font-weight: 700; }
+    .bill-due { display: block; color: var(--muted); font-size: 9px; }
+    .bill-amount { margin-right: 4px; font-size: 10px; font-weight: 700; white-space: nowrap; }
+    .bill-row .button { min-height: 31px; padding: 0 9px; font-size: 9px; }
+    .bill-paid { color: var(--green); font-size: 9px; font-weight: 700; }
+    .card-visual { position: relative; display: flex; min-height: 128px; flex-direction: column; justify-content: space-between; overflow: hidden; padding: 16px; color: #fff; background: linear-gradient(125deg, #27365d, #46588b); border-radius: 13px; }
+    .card-visual::after { position: absolute; right: -55px; bottom: -135px; width: 230px; height: 230px; border: 1px solid #ffffff25; border-radius: 50%; content: ""; box-shadow: 0 0 0 22px #ffffff08, 0 0 0 47px #ffffff08; }
+    .card-brand, .card-number, .card-holder { position: relative; z-index: 1; }
+    .card-brand { display: flex; justify-content: space-between; color: #dbe1f5; font-size: 10px; font-weight: 700; letter-spacing: .6px; }
+    .card-number { margin-top: 13px; font-size: 15px; letter-spacing: 2px; }
+    .card-holder { display: flex; justify-content: space-between; color: #e2e6f4; font-size: 9px; text-transform: uppercase; }
+    .card-status-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; }
+    .card-status-label { color: var(--muted); font-size: 10px; }
+    .toggle { position: relative; width: 38px; height: 22px; padding: 0; background: #c6cbd6; border: 0; border-radius: 15px; transition: .2s; }
+    .toggle::after { position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; background: #fff; border-radius: 50%; content: ""; transition: .2s; }
+    .toggle[aria-checked="true"] { background: var(--green); }
+    .toggle[aria-checked="true"]::after { transform: translateX(16px); }
+    .activity-tools { display: flex; align-items: center; gap: 7px; padding: 0 19px 12px; }
+    .activity-search, .activity-filter { height: 34px; color: #667084; background: #fbfcfe; border: 1px solid #e7eaf1; border-radius: 8px; font-size: 10px; outline: none; }
+    .activity-search { width: min(220px, 48%); padding: 0 10px; }
+    .activity-filter { padding: 0 9px; }
+    .activity-search:focus, .activity-filter:focus { border-color: #8190f5; }
+    .table-wrap { overflow-x: auto; padding: 0 19px 9px; }
+    table { width: 100%; border-collapse: collapse; text-align: left; white-space: nowrap; }
+    th { padding: 10px 8px; color: #a0a7b5; border-bottom: 1px solid var(--line); font-size: 9px; font-weight: 650; letter-spacing: .5px; text-transform: uppercase; }
+    td { padding: 12px 8px; border-bottom: 1px solid #f2f3f7; font-size: 10px; }
+    tbody tr:last-child td { border-bottom: 0; }
+    .merchant { display: flex; align-items: center; gap: 9px; font-weight: 650; }
+    .merchant-icon { display: grid; width: 30px; height: 30px; place-items: center; color: #6875db; background: #f0f2ff; border-radius: 9px; font-size: 11px; }
+    .merchant-icon.green { color: #219875; background: #eaf8f3; }
+    .merchant-icon.orange { color: #c58642; background: #fff5e9; }
+    .subtext { display: block; color: #a0a7b5; font-size: 9px; font-weight: 400; }
+    .amount { font-weight: 700; }
+    .amount.credit { color: var(--green); }
+    .status { display: inline-block; padding: 4px 7px; color: #219875; background: #eaf8f3; border-radius: 12px; font-size: 9px; }
+    .demo-note { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 4px; margin: 13px 2px 0; color: #929aaa; font-size: 10px; text-align: center; }
+    .reset-demo { padding: 2px 4px; color: var(--blue); background: none; border: 0; font-size: 10px; font-weight: 650; }
+    .reset-demo:hover { text-decoration: underline; }
+
+    dialog { width: min(430px, calc(100% - 30px)); padding: 0; color: var(--ink); background: white; border: 0; border-radius: 16px; box-shadow: 0 24px 90px #101a363d; }
+    dialog::backdrop { background: #15203a70; backdrop-filter: blur(3px); }
+    .dialog-head { display: flex; align-items: center; justify-content: space-between; padding: 20px 22px 14px; border-bottom: 1px solid var(--line); }
+    .dialog-head h2 { margin: 0; font-size: 17px; }
+    .close-button { display: grid; width: 30px; height: 30px; place-items: center; color: #7e8799; background: #f5f6fa; border: 0; border-radius: 8px; font-size: 18px; }
+    .dialog-body { display: grid; gap: 14px; padding: 19px 22px 22px; }
+    .info-content { max-height: min(65vh, 540px); overflow-y: auto; }
+    .info-intro { margin: 0; color: var(--muted); font-size: 12px; }
+    .account-modal-list { display: grid; gap: 10px; }
+    .account-modal-item { padding: 14px; border: 1px solid var(--line); border-radius: 11px; }
+    .account-modal-item h3 { margin: 0; font-size: 13px; }
+    .account-modal-number { margin-top: 2px; color: var(--muted); font-size: 10px; }
+    .account-modal-balance { margin: 12px 0 3px; font-size: 18px; font-weight: 750; }
+    .account-modal-meta { color: var(--muted); font-size: 10px; }
+    .faq-list { display: grid; gap: 8px; }
+    .faq-list details { padding: 11px 12px; border: 1px solid var(--line); border-radius: 9px; }
+    .faq-list summary { color: var(--ink); cursor: pointer; font-size: 11px; font-weight: 700; }
+    .faq-list p { margin: 8px 0 0; color: var(--muted); font-size: 11px; }
+    .notification-empty { padding: 10px 0; text-align: center; }
+    .notification-empty strong { display: block; margin-bottom: 4px; font-size: 13px; }
+    .notification-empty p { margin: 0; color: var(--muted); font-size: 11px; }
+    .field { display: grid; gap: 6px; color: #667084; font-size: 11px; font-weight: 650; }
+    .field input, .field select { width: 100%; height: 42px; padding: 0 11px; color: var(--ink); background: #fbfcfe; border: 1px solid #e7eaf1; border-radius: 8px; outline: none; }
+    .field input:focus, .field select:focus { border-color: #8190f5; box-shadow: 0 0 0 3px #5268e81c; }
+    .dialog-body .button { width: 100%; margin-top: 3px; }
+    .toast { position: fixed; right: 24px; bottom: 24px; z-index: 6; max-width: calc(100% - 48px); padding: 12px 16px; color: white; background: #202b46; border-radius: 10px; box-shadow: var(--shadow); font-size: 12px; opacity: 0; pointer-events: none; transform: translateY(10px); transition: .2s; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    @media (min-width: 1450px) { .main { padding-right: 56px; padding-left: 56px; } }
+    @media (max-width: 1000px) { .sidebar { width: 205px; } .main { margin-left: 205px; padding-right: 24px; padding-left: 24px; } }
+    @media (max-width: 760px) {
+      .sidebar { position: static; width: 100%; height: auto; padding: 13px 16px; border-right: 0; border-bottom: 1px solid var(--line); }
+      .brand { padding: 0 3px; }
+      .nav-label, .sidebar-bottom { display: none; }
+      .nav { display: flex; justify-content: space-between; gap: 0; overflow-x: auto; margin-top: 13px; }
+      .nav a { flex: none; gap: 5px; padding: 7px 6px; font-size: 10px; }
+      .nav svg { width: 15px; height: 15px; }
+      .main { margin-left: 0; padding: 0 16px 28px; }
+      .topbar { height: 56px; }
+      .today { display: none; }
+      .preview-badge { padding: 5px 7px; font-size: 9px; }
+      .welcome { align-items: flex-start; flex-direction: column; padding: 22px 0 17px; }
+      h1 { font-size: 22px; }
+      .welcome-actions { width: 100%; }
+      .welcome-actions .button { flex: 1; }
+      .grid { grid-template-columns: 1fr; gap: 15px; }
+      .balance-card { min-height: 190px; }
+      .chart-panel { margin-top: 15px; }
+      .chart { height: 175px; }
+      .chart-tools { gap: 6px; }
+      .chart-tools .legend { display: none; }
+      .transactions-panel { margin-top: 15px; }
+      .extras-grid { grid-template-columns: 1fr; gap: 15px; margin-top: 15px; }
+      .loans-panel { margin-top: 15px; }
+      .loan-overview { grid-template-columns: 1fr; gap: 16px; }
+    }
+    @media (max-width: 390px) { .main { padding-right: 11px; padding-left: 11px; } .balance-card { padding: 21px; } .balance-number { font-size: 28px; } .welcome-actions { gap: 6px; } .welcome-actions .button { padding: 0 9px; font-size: 11px; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" aria-label="Main navigation">
+      <a class="brand" href="#overview" aria-label="Apex Banking overview">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M4 9.5 12 5l8 4.5M5.5 10v7m4.3-7v7m4.4-7v7m4.3-7v7M4 19h16M3 21h18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="brand-name">apex<span class="brand-sub">BANKING</span></span>
+      </a>
+      <div class="nav-label">WORKSPACE</div>
+      <nav class="nav">
+        <a class="active" href="#overview"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/></svg>Overview</a>
+        <a href="#accounts"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M3 10h18m-14 5h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>My accounts</a>
+        <a href="#activity"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h15m0 0-3-3m3 3-3 3M20 17H5m0 0 3-3m-3 3 3 3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>Transactions</a>
+        <a href="#loans"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3.5 10.5 12 5l8.5 5.5M5 10v8.5h14V10M9 18.5v-5h6v5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>Loans</a>
+        <a href="#insights"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3" stroke="currentColor" stroke-width="1.7"/><path d="M8 8h8m-8 4h5m-5 4h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Insights</a>
+        <a href="#card-controls"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M3 10h18m-14 4h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Cards</a>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="help-card">
+          <strong>Need a hand?</strong>
+          <p>Your banking, made a little easier.</p>
+          <button type="button" id="open-help">Visit help centre &rarr;</button>
+        </div>
+        <div class="profile">
+          <span class="avatar" aria-hidden="true">AS</span>
+          <span><span class="profile-name">Aarav Sharma</span><span class="profile-role">Personal banking</span></span>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main" id="overview">
+      <header class="topbar">
+        <div class="breadcrumb">Workspace <span aria-hidden="true">/</span> <strong>Overview</strong></div>
+        <div class="top-actions">
+          <span class="preview-badge" id="database-status">CONNECTING TO DATABASE</span>
+          <span class="today" id="today"></span>
+          <button class="icon-button" id="open-notifications" type="button" aria-label="Notifications">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9m-8 12h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <span class="avatar" aria-label="Aarav Sharma">AS</span>
+        </div>
+      </header>
+
+      <div class="content">
+        <section class="welcome">
+          <div><div class="eyebrow">PERSONAL BANKING</div><h1 id="greeting">Good morning, Aarav <span aria-hidden="true">✦</span></h1><p>Your finances at a glance. What would you like to do?</p></div>
+          <div class="welcome-actions">
+            <button class="button" type="button" data-open="deposit">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg> Add money
+            </button>
+            <button class="button primary" type="button" data-open="transfer">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h15m0 0-3-3m3 3-3 3M20 17H5m0 0 3-3m-3 3 3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Make a transfer
+            </button>
+          </div>
+        </section>
+
+        <div class="grid">
+          <section aria-label="Balance overview">
+            <div class="balance-card">
+              <div class="balance-top"><div class="balance-label">Total account balance</div><button class="balance-toggle" id="toggle-balance" type="button" aria-label="Hide balances" aria-pressed="false"><svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="2.5" stroke="currentColor" stroke-width="1.7"/></svg></button></div>
+              <div class="balance-number" id="total-balance">—</div>
+              <div class="balance-foot">
+                <button class="trend trend-button" id="show-accounts" type="button"><span aria-hidden="true">↗</span> All accounts</button>
+                <span class="balance-note">Updated just now</span>
+              </div>
+            </div>
+            <div class="mini-stats">
+              <div class="panel stat"><div class="stat-label">Money in · sample</div><div class="stat-value" id="money-in" data-value="23000">₹23,000.00</div><div class="stat-change">Deposits &amp; incoming transfers</div></div>
+              <div class="panel stat"><div class="stat-label">Money out · sample</div><div class="stat-value" id="money-out" data-value="2500">₹2,500.00</div><div class="stat-change muted">Outgoing transfers</div></div>
+            </div>
+          </section>
+
+          <section class="panel" id="accounts" aria-labelledby="accounts-heading">
+            <div class="section-head"><h2 id="accounts-heading">Your accounts</h2><button class="text-link" id="view-all-accounts" type="button">View all</button></div>
+            <div class="accounts">
+              <button class="account account-button" data-account-details="ACC-1001" type="button" aria-label="View savings account details">
+                <span class="account-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9.5 12 5l8 4.5M5.5 10v7m4.3-7v7m4.4-7v7m4.3-7v7M4 19h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                <span class="account-main"><span class="account-name">Savings account</span><span class="account-number">•••• 1001 · INR</span></span>
+                <span class="account-details"><span class="account-balance" data-account-balance="ACC-1001">—</span><span class="account-status">● Loading</span></span>
+              </button>
+              <button class="account account-button" data-account-details="ACC-1002" type="button" aria-label="View current account details">
+                <span class="account-icon current"><svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3" stroke="currentColor" stroke-width="1.7"/><path d="M8 8h8m-8 4h5m-5 4h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
+                <span class="account-main"><span class="account-name">Current account</span><span class="account-number">•••• 1002 · INR</span></span>
+                <span class="account-details"><span class="account-balance" data-account-balance="ACC-1002">—</span><span class="account-status">● Loading</span></span>
+              </button>
+            </div>
+          </section>
+        </div>
+
+        <section class="panel chart-panel" id="insights" aria-labelledby="chart-heading">
+          <div class="section-head chart-head"><div><h2 id="chart-heading">Balance trend</h2><span class="subtext">Illustrative preview · not connected to live account data</span></div><div class="chart-tools"><div class="range-tabs" role="group" aria-label="Chart time range"><button class="range-tab active" type="button" data-range="7D" aria-pressed="true">7D</button><button class="range-tab" type="button" data-range="30D" aria-pressed="false">30D</button><button class="range-tab" type="button" data-range="90D" aria-pressed="false">90D</button></div><span class="legend"><span class="legend-dot"></span> Balance</span></div></div>
+          <div class="chart-wrap">
+            <svg class="chart" viewBox="0 0 760 190" preserveAspectRatio="none" role="img" aria-label="Illustrative balance chart">
+              <defs><linearGradient id="area" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#6478ed" stop-opacity=".19"/><stop offset="100%" stop-color="#6478ed" stop-opacity="0"/></linearGradient></defs>
+              <g stroke="#eef0f5" stroke-width="1"><path d="M45 28H748M45 67H748M45 106H748M45 145H748"/></g>
+              <g fill="#9aa2b0" font-size="9" font-family="system-ui,sans-serif"><text x="0" y="31">₹16L</text><text x="0" y="70">₹12L</text><text x="8" y="109">₹8L</text><text x="8" y="148">₹4L</text><text x="47" y="173">Mon</text><text x="160" y="173">Tue</text><text x="275" y="173">Wed</text><text x="390" y="173">Thu</text><text x="505" y="173">Fri</text><text x="620" y="173">Sat</text><text x="727" y="173">Sun</text></g>
+              <path id="chart-area" d="M48 82 C90 78 105 91 150 76 S220 66 263 71 S330 54 374 65 S443 48 488 59 S550 50 601 56 S680 43 744 39 L744 145 L48 145 Z" fill="url(#area)"/>
+              <path id="chart-line" d="M48 82 C90 78 105 91 150 76 S220 66 263 71 S330 54 374 65 S443 48 488 59 S550 50 601 56 S680 43 744 39" fill="none" stroke="#5c70e8" stroke-width="3" stroke-linecap="round"/>
+              <g id="chart-points" fill="#fff" stroke="#5c70e8" stroke-width="2"><circle cx="48" cy="82" r="4"/><circle cx="150" cy="76" r="4"/><circle cx="263" cy="71" r="4"/><circle cx="374" cy="65" r="4"/><circle cx="488" cy="59" r="4"/><circle cx="601" cy="56" r="4"/><circle cx="744" cy="39" r="4"/></g>
+            </svg>
+          </div>
+        </section>
+
+        <section class="panel transactions-panel" id="activity" aria-labelledby="transactions-heading">
+          <div class="section-head"><div><h2 id="transactions-heading">Recent activity</h2><span class="subtext">Transactions saved in the local database</span></div><div class="chart-tools"><span class="subtext" id="activity-count">Loading…</span><button class="button" id="export-activity" type="button">Export CSV</button></div></div>
+          <div class="activity-tools"><input class="activity-search" id="activity-search" type="search" placeholder="Search activity" aria-label="Search activity"><select class="activity-filter" id="activity-filter" aria-label="Filter activity"><option value="all">All activity</option><option value="transfer">Transfers</option><option value="deposit">Deposits</option><option value="loan">Loan payments</option></select></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Transaction</th><th>Account</th><th>Date</th><th>Status</th><th style="text-align:right">Amount</th></tr></thead>
+              <tbody id="transaction-list"></tbody>
+            </table>
+          </div>
+        </section>
+        <div class="extras-grid">
+          <section class="panel extra-panel" id="spending-plan" aria-labelledby="budget-heading">
+            <div class="section-head"><div><h2 id="budget-heading">Monthly spending plan</h2><span class="subtext">Demo budget · resets with sample data</span></div></div>
+            <div class="budget-body">
+              <div class="budget-amounts"><span class="budget-spent" id="budget-spent">₹2,500</span><span class="budget-limit">of <strong id="budget-limit">₹25,000</strong></span></div>
+              <div class="progress-track" role="progressbar" id="budget-progress" aria-label="Monthly budget used" aria-valuemin="0" aria-valuemax="25000" aria-valuenow="2500"><div class="progress-fill" id="budget-fill"></div></div>
+              <p class="budget-caption" id="budget-caption">₹22,500 left in your sample monthly plan.</p>
+            </div>
+          </section>
+          <section class="panel extra-panel" id="savings-goal" aria-labelledby="goal-heading">
+            <div class="section-head"><div><h2 id="goal-heading">Savings goal</h2><span class="subtext">A little progress adds up</span></div></div>
+            <div class="goal-body">
+              <div class="goal-headline"><span class="goal-icon" aria-hidden="true">✦</span><span><span class="goal-title">Aarav’s getaway</span><span class="goal-caption">Target ₹75,000</span></span></div>
+              <div class="budget-amounts"><span class="goal-title" id="goal-saved">₹42,000 saved</span><span class="budget-limit" id="goal-percent">56%</span></div>
+              <div class="progress-track goal-progress" role="progressbar" id="goal-progress" aria-label="Savings goal progress" aria-valuemin="0" aria-valuemax="75000" aria-valuenow="42000"><div class="progress-fill" id="goal-fill"></div></div>
+              <div class="goal-footer"><span class="budget-limit" id="goal-remaining">₹33,000 to go</span><button class="button" id="contribute-goal" type="button">Add to goal</button></div>
+            </div>
+          </section>
+          <section class="panel extra-panel" id="upcoming-bills" aria-labelledby="bills-heading">
+            <div class="section-head"><div><h2 id="bills-heading">Upcoming payments</h2><span class="subtext">Pay a sample bill from an account</span></div><span class="subtext" id="bills-count">2 due</span></div>
+            <div class="bill-list">
+              <div class="bill-row" data-bill-id="streaming"><span class="bill-icon" aria-hidden="true">S</span><span class="bill-main"><span class="bill-name">StreamPlus</span><span class="bill-due">Entertainment · Due 28 Oct</span></span><span class="bill-amount">₹649</span><button class="button" type="button" data-pay-bill="streaming" aria-label="Pay StreamPlus bill">Pay</button></div>
+              <div class="bill-row" data-bill-id="internet"><span class="bill-icon" aria-hidden="true">W</span><span class="bill-main"><span class="bill-name">Home internet</span><span class="bill-due">Utilities · Due 30 Oct</span></span><span class="bill-amount">₹999</span><button class="button" type="button" data-pay-bill="internet" aria-label="Pay home internet bill">Pay</button></div>
+            </div>
+          </section>
+          <section class="panel extra-panel" id="card-controls" aria-labelledby="card-heading">
+            <div class="section-head"><div><h2 id="card-heading">Card controls</h2><span class="subtext">Controls for this demo card only</span></div></div>
+            <div class="card-body">
+              <div class="card-visual" aria-label="Demo debit card">
+                <div class="card-brand"><span>APEX</span><span>DEBIT</span></div>
+                <div class="card-number">•••• &nbsp; •••• &nbsp; •••• &nbsp; 1001</div>
+                <div class="card-holder"><span>Aarav Sharma</span><span>INR</span></div>
+              </div>
+              <div class="card-status-row"><span class="card-status-label" id="card-status">Card is active</span><button class="toggle" id="card-lock" type="button" role="switch" aria-checked="false" aria-label="Lock demo card"></button></div>
+            </div>
+          </section>
+        </div>
+        <section class="panel loans-panel" id="loans" aria-labelledby="loans-heading">
+          <div class="section-head"><div><h2 id="loans-heading">Loans</h2><span class="subtext">A clear view of your sample repayment plan</span></div><span class="status">● Active</span></div>
+          <div class="loan-overview">
+            <div>
+              <div class="loan-card">
+                <span class="loan-icon" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M3.5 10.5 12 5l8.5 5.5M5 10v8.5h14V10M9 18.5v-5h6v5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                <span><span class="loan-title">Personal loan</span><span class="loan-number">Loan ID · APL-2024-01842</span></span>
+              </div>
+              <div class="loan-balance-label">Outstanding balance</div>
+              <div class="loan-balance" id="loan-outstanding">₹2,45,000.00</div>
+              <div class="loan-meta"><span>Original amount <strong>₹4,00,000</strong></span><span>Interest rate <strong>9.5% p.a.</strong></span><span>Next EMI <strong id="loan-next-due">05 Nov 2026</strong></span></div>
+            </div>
+            <div class="loan-repayment">
+              <div class="loan-repayment-head"><strong>Repayment progress</strong><span id="loan-paid-count">13 of 24 installments</span></div>
+              <div class="progress-track" id="loan-progress" role="progressbar" aria-label="Loan repayment progress" aria-valuemin="0" aria-valuemax="24" aria-valuenow="13"><div class="progress-fill" id="loan-fill"></div></div>
+              <div class="loan-repayment-foot"><span>Monthly EMI <strong id="loan-emi">₹12,500</strong></span><button class="button primary" id="pay-loan" type="button">Pay EMI</button></div>
+            </div>
+          </div>
+        </section>
+        <p class="demo-note"><span>Deposits and transfers update the local SQLite database. Spending plan, goal, bills, card and loan widgets are previews only.</span><button class="reset-demo" id="reset-demo" type="button">Reset preview widgets</button></p>
+      </div>
+    </main>
+  </div>
+
+  <dialog id="action-dialog" aria-labelledby="dialog-title">
+    <form id="action-form">
+      <div class="dialog-head"><h2 id="dialog-title">Make a transfer</h2><button class="close-button" type="button" aria-label="Close" data-close>&times;</button></div>
+      <div class="dialog-body">
+        <label class="field" id="from-field">From account
+          <select id="from-account"><option value="ACC-1001">Savings · •••• 1001</option><option value="ACC-1002">Current · •••• 1002</option></select>
+        </label>
+        <label class="field" id="to-field">To account
+          <select id="to-account"><option value="ACC-1002">Current · •••• 1002</option><option value="ACC-1001">Savings · •••• 1001</option></select>
+        </label>
+        <label class="field">Amount (INR)
+          <input id="amount" type="number" min="0.01" step="0.01" placeholder="Enter amount" required>
+        </label>
+        <button class="button primary" id="submit-action" type="submit">Confirm transfer</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog id="info-dialog" aria-labelledby="info-title">
+    <div class="dialog-head"><h2 id="info-title"></h2><button class="close-button" type="button" aria-label="Close" data-close-info>&times;</button></div>
+    <div class="dialog-body info-content" id="info-content"></div>
+  </dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script>
+    (() => {
+      const balances = {};
+      const labels = { "ACC-1001": "•••• 1001", "ACC-1002": "•••• 1002" };
+      const accountInfo = [
+        { id: "ACC-1001", name: "Savings account", number: "•••• 1001", type: "Savings", branch: "Connaught Place Branch · New Delhi", ifsc: "APEX0001001" },
+        { id: "ACC-1002", name: "Current account", number: "•••• 1002", type: "Current", branch: "Connaught Place Branch · New Delhi", ifsc: "APEX0001001" }
+      ];
+      const cashFlow = { incoming: 23000, outgoing: 2500 };
+      const budgetLimit = 25000;
+      const goalTarget = 75000;
+      const demoBills = {
+        streaming: { name: "StreamPlus", amount: 649, paid: false },
+        internet: { name: "Home internet", amount: 999, paid: false }
+      };
+      const initialLoan = { outstanding: 245000, installmentsPaid: 13, totalInstallments: 33, emi: 12500, nextDue: new Date(2026, 10, 5) };
+      const loan = { ...initialLoan, nextDue: new Date(initialLoan.nextDue) };
+      let goalSaved = 42000;
+      let cardLocked = false;
+      const dialog = document.querySelector("#action-dialog");
+      const infoDialog = document.querySelector("#info-dialog");
+      const infoContent = document.querySelector("#info-content");
+      const form = document.querySelector("#action-form");
+      const toast = document.querySelector("#toast");
+      const activityList = document.querySelector("#transaction-list");
+      const activitySearch = document.querySelector("#activity-search");
+      const activityFilter = document.querySelector("#activity-filter");
+      let action = "transfer";
+      let balancesVisible = true;
+      let toastTimer;
+      const format = value => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(value);
+
+      document.querySelector("#today").textContent = new Intl.DateTimeFormat("en-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric" }).format(new Date());
+      const hour = new Date().getHours();
+      document.querySelector("#greeting").firstChild.textContent = `${hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening"}, Aarav `;
+      const updateCashFlow = () => {
+        document.querySelector("#money-in").textContent = balancesVisible ? format(cashFlow.incoming) : "₹ ••••••";
+        document.querySelector("#money-out").textContent = balancesVisible ? format(cashFlow.outgoing) : "₹ ••••••";
+        document.querySelector("#budget-spent").textContent = balancesVisible ? format(cashFlow.outgoing) : "₹ ••••••";
+        const budgetPercent = Math.min(cashFlow.outgoing / budgetLimit * 100, 100);
+        document.querySelector("#budget-fill").style.width = `${budgetPercent}%`;
+        document.querySelector("#budget-progress").setAttribute("aria-valuenow", String(cashFlow.outgoing));
+        document.querySelector("#budget-caption").textContent = cashFlow.outgoing >= budgetLimit
+          ? "You’ve reached your sample monthly spending plan."
+          : `${format(budgetLimit - cashFlow.outgoing)} left in your sample monthly plan.`;
+      };
+      const updateGoal = () => {
+        const percent = Math.min(Math.round(goalSaved / goalTarget * 100), 100);
+        document.querySelector("#goal-saved").textContent = `${balancesVisible ? format(goalSaved) : "₹ ••••••"} saved`;
+        document.querySelector("#goal-percent").textContent = `${percent}%`;
+        document.querySelector("#goal-fill").style.width = `${percent}%`;
+        document.querySelector("#goal-progress").setAttribute("aria-valuenow", String(goalSaved));
+        document.querySelector("#goal-remaining").textContent = balancesVisible ? `${format(Math.max(goalTarget - goalSaved, 0))} to go` : "Balance hidden";
+        document.querySelector("#contribute-goal").disabled = goalSaved >= goalTarget;
+        document.querySelector("#contribute-goal").textContent = goalSaved >= goalTarget ? "Goal reached" : "Add to goal";
+      };
+      const updateBillsCount = () => {
+        const due = Object.values(demoBills).filter(bill => !bill.paid).length;
+        document.querySelector("#bills-count").textContent = `${due} due`;
+      };
+      const updateLoan = () => {
+        const paidPercent = loan.installmentsPaid / loan.totalInstallments * 100;
+        document.querySelector("#loan-outstanding").textContent = balancesVisible ? format(loan.outstanding) : "₹ ••••••";
+        document.querySelector("#loan-paid-count").textContent = `${loan.installmentsPaid} of ${loan.totalInstallments} installments`;
+        document.querySelector("#loan-fill").style.width = `${paidPercent}%`;
+        document.querySelector("#loan-progress").setAttribute("aria-valuenow", String(loan.installmentsPaid));
+        document.querySelector("#loan-emi").textContent = format(Math.min(loan.emi, loan.outstanding));
+        document.querySelector("#pay-loan").disabled = loan.outstanding <= 0;
+        document.querySelector("#pay-loan").textContent = loan.outstanding <= 0 ? "Loan paid" : "Pay EMI";
+        document.querySelector("#loans").querySelector(".status").textContent = loan.outstanding <= 0 ? "● Paid off" : "● Active";
+        document.querySelector("#loan-next-due").textContent = loan.outstanding <= 0
+          ? "Paid off"
+          : new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric" }).format(loan.nextDue);
+      };
+      const updateTotal = () => {
+        const totalBalance = Object.values(balances).reduce((total, balance) => total + balance, 0);
+        document.querySelector("#total-balance").textContent = balancesVisible ? format(totalBalance) : "₹ ••••••••";
+        for (const [number, balance] of Object.entries(balances)) {
+          document.querySelector(`[data-account-balance="${number}"]`).textContent = balancesVisible ? format(balance) : "₹ ••••••";
+        }
+        document.querySelector("#toggle-balance").setAttribute("aria-label", balancesVisible ? "Hide balances" : "Show balances");
+        document.querySelector("#toggle-balance").setAttribute("aria-pressed", String(!balancesVisible));
+        updateCashFlow();
+        updateGoal();
+        updateLoan();
+      };
+      const filterActivity = () => {
+        const query = activitySearch.value.trim().toLocaleLowerCase();
+        let visibleCount = 0;
+        for (const row of activityList.rows) {
+          const matchesType = activityFilter.value === "all" || row.dataset.kind === activityFilter.value;
+          const matchesSearch = row.textContent.toLocaleLowerCase().includes(query);
+          row.hidden = !matchesType || !matchesSearch;
+          if (!row.hidden) visibleCount++;
+        }
+        document.querySelector("#activity-count").textContent = `${visibleCount} ${visibleCount === 1 ? "transaction" : "transactions"}`;
+      };
+      const showToast = message => {
+        toast.textContent = message;
+        toast.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove("show"), 2800);
+      };
+      const fetchJson = async (url, options) => {
+        const response = await fetch(url, options);
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "The database request failed.");
+        return result;
+      };
+      const renderTransactions = transactions => {
+        activityList.replaceChildren();
+        for (const transaction of transactions) {
+          const outgoing = transaction.type === "TRANSFER_OUT";
+          const credit = transaction.type === "DEPOSIT" || transaction.type === "TRANSFER_IN";
+          const isTransfer = transaction.type.startsWith("TRANSFER");
+          const row = document.createElement("tr");
+          row.dataset.kind = isTransfer ? "transfer" : "deposit";
+          const description = document.createElement("td");
+          const merchant = document.createElement("span");
+          merchant.className = "merchant";
+          const icon = document.createElement("span");
+          icon.className = `merchant-icon ${credit ? "green" : "orange"}`;
+          icon.textContent = isTransfer ? (outgoing ? "↗" : "↙") : "⌁";
+          const name = document.createElement("span");
+          name.append(document.createTextNode(isTransfer
+            ? `${outgoing ? "Transfer to" : "Transfer from"} ${labels[transaction.counterpartyAccount] || transaction.counterpartyAccount}`
+            : "Account deposit"));
+          const type = document.createElement("span");
+          type.className = "subtext";
+          type.textContent = `${transaction.type.replaceAll("_", " ")} · ${transaction.transactionId}`;
+          name.append(type);
+          merchant.append(icon, name);
+          description.append(merchant);
+          const account = document.createElement("td");
+          account.textContent = labels[transaction.accountNumber] || transaction.accountNumber;
+          const date = document.createElement("td");
+          date.textContent = transaction.timestamp
+            ? new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(transaction.timestamp.replace(" ", "T")))
+            : "Just now";
+          const status = document.createElement("td");
+          const badge = document.createElement("span");
+          badge.className = "status";
+          badge.textContent = "Completed";
+          status.append(badge);
+          const amount = document.createElement("td");
+          amount.className = `amount ${credit ? "credit" : ""}`;
+          amount.style.textAlign = "right";
+          amount.textContent = `${credit ? "+" : "−"} ${format(transaction.amount)}`;
+          row.append(description, account, date, status, amount);
+          activityList.append(row);
+        }
+        filterActivity();
+      };
+      const refreshDatabaseData = async () => {
+        const [accounts, transactions] = await Promise.all([
+          fetchJson("/api/accounts"),
+          fetchJson("/api/transactions?limit=50")
+        ]);
+        for (const accountNumber of Object.keys(balances)) delete balances[accountNumber];
+        for (const account of accounts) balances[account.accountNumber] = account.balance;
+        for (const account of accounts) {
+          const balance = document.querySelector(`[data-account-balance="${account.accountNumber}"]`);
+          if (balance) balance.textContent = balancesVisible ? format(account.balance) : "₹ ••••••";
+          const card = document.querySelector(`[data-account-details="${account.accountNumber}"]`);
+          if (card) card.querySelector(".account-status").textContent = `● ${account.status}`;
+        }
+        renderTransactions(transactions);
+        updateTotal();
+      };
+      const setDatabaseStatus = (connected, message = "") => {
+        const status = document.querySelector("#database-status");
+        status.textContent = connected ? "LOCAL DATABASE CONNECTED" : "DATABASE OFFLINE";
+        status.title = message;
+        document.querySelectorAll('[data-open="deposit"], [data-open="transfer"]').forEach(button => {
+          button.disabled = !connected;
+        });
+      };
+      const initializeDatabaseView = async () => {
+        try {
+          const health = await fetchJson("/api/health");
+          await refreshDatabaseData();
+          setDatabaseStatus(true, `SQLite ready: ${health.database} (${health.accountCount} accounts)`);
+        } catch (error) {
+          setDatabaseStatus(false, error.message);
+          document.querySelector("#activity-count").textContent = "Database unavailable";
+          showToast(`Database connection failed: ${error.message}`);
+        }
+      };
+      const openInfoDialog = (title, buildContent) => {
+        document.querySelector("#info-title").textContent = title;
+        infoContent.replaceChildren();
+        buildContent(infoContent);
+        infoDialog.showModal();
+      };
+      const appendInfoText = (parent, text, className) => {
+        const paragraph = document.createElement("p");
+        paragraph.className = className;
+        paragraph.textContent = text;
+        parent.append(paragraph);
+        return paragraph;
+      };
+      const openAccountsDialog = selectedId => {
+        const accountsToShow = selectedId ? accountInfo.filter(account => account.id === selectedId) : accountInfo;
+        openInfoDialog(selectedId ? accountsToShow[0].name : "Your accounts", content => {
+          appendInfoText(content, "Account balances are loaded from the local SQLite database.", "info-intro");
+          const list = document.createElement("div");
+          list.className = "account-modal-list";
+          for (const account of accountsToShow) {
+            const card = document.createElement("article");
+            card.className = "account-modal-item";
+            const name = document.createElement("h3");
+            name.textContent = account.name;
+            const number = document.createElement("div");
+            number.className = "account-modal-number";
+            number.textContent = `${account.id} · ${account.number}`;
+            const balance = document.createElement("div");
+            balance.className = "account-modal-balance";
+            balance.textContent = balancesVisible ? format(balances[account.id]) : "₹ ••••••";
+            const details = document.createElement("div");
+            details.className = "account-modal-meta";
+            details.textContent = `${account.type} · Active · INR`;
+            const branch = document.createElement("div");
+            branch.className = "account-modal-meta";
+            branch.textContent = `${account.branch} · IFSC ${account.ifsc}`;
+            const transferButton = document.createElement("button");
+            transferButton.className = "button";
+            transferButton.type = "button";
+            transferButton.textContent = "Transfer from this account";
+            transferButton.addEventListener("click", () => {
+              infoDialog.close();
+              openDialog("transfer", account.id);
+            });
+            card.append(name, number, balance, details, branch, transferButton);
+            list.append(card);
+          }
+          content.append(list);
+        });
+      };
+      const openHelpDialog = () => openInfoDialog("Help centre", content => {
+        appendInfoText(content, "This dashboard connects to the local SQLite database when run with the Java web server.", "info-intro");
+        const faqs = [
+          ["Is this connected to a real bank?", "No. This local application uses its SQLite database only; it does not connect to or send payments through a real bank."],
+          ["What happens when I deposit or transfer?", "The Java backend writes the transaction to SQLite and the database trigger updates the account balance. The dashboard reloads both from the database."],
+          ["How do I reset preview widgets?", "Use Reset preview widgets. This does not change database accounts or transactions."]
+        ];
+        const list = document.createElement("div");
+        list.className = "faq-list";
+        for (const [question, answer] of faqs) {
+          const item = document.createElement("details");
+          const summary = document.createElement("summary");
+          summary.textContent = question;
+          const response = document.createElement("p");
+          response.textContent = answer;
+          item.append(summary, response);
+          list.append(item);
+        }
+        content.append(list);
+      });
+      const openNotificationsDialog = () => openInfoDialog("Notifications", content => {
+        const empty = document.createElement("div");
+        empty.className = "notification-empty";
+        const title = document.createElement("strong");
+        title.textContent = "You’re all caught up";
+        const description = document.createElement("p");
+        description.textContent = "There are no new notifications in this demo preview.";
+        empty.append(title, description);
+        content.append(empty);
+      });
+      const openDialog = (type, fromAccount = "ACC-1001", details = {}) => {
+        action = type;
+        const isDeposit = type === "deposit";
+        const isGoal = type === "goal";
+        const isPayment = type === "payment";
+        const isLoanPayment = type === "loanPayment";
+        const hideRecipient = isDeposit || isGoal || isPayment || isLoanPayment;
+        document.querySelector("#dialog-title").textContent = isDeposit ? "Add money" : isGoal ? "Add to savings goal" : isPayment ? `Pay ${details.bill?.name || "bill"}` : isLoanPayment ? "Pay loan EMI" : "Make a transfer";
+        document.querySelector("#from-field").firstChild.textContent = isDeposit ? "Add to account" : isGoal ? "Contribute from account" : isPayment ? "Pay from account" : isLoanPayment ? "Pay from account" : "From account";
+        document.querySelector("#to-field").hidden = hideRecipient;
+        document.querySelector("#from-account").value = fromAccount;
+        document.querySelector("#to-account").value = fromAccount === "ACC-1001" ? "ACC-1002" : "ACC-1001";
+        const amountInput = document.querySelector("#amount");
+        amountInput.value = details.bill ? String(details.bill.amount) : isLoanPayment ? String(Math.min(loan.emi, loan.outstanding)) : "";
+        amountInput.readOnly = isPayment || isLoanPayment;
+        amountInput.max = isGoal ? String(goalTarget - goalSaved) : "";
+        document.querySelector("#submit-action").textContent = isDeposit ? "Add money" : isGoal ? "Contribute to goal" : isPayment ? "Confirm demo payment" : isLoanPayment ? "Confirm EMI payment" : "Confirm transfer";
+        dialog.showModal();
+        amountInput.focus();
+      };
+      document.querySelectorAll("[data-open]").forEach(button => button.addEventListener("click", () => openDialog(button.dataset.open)));
+      document.querySelectorAll("[data-close]").forEach(button => button.addEventListener("click", () => dialog.close()));
+      document.querySelectorAll("[data-close-info]").forEach(button => button.addEventListener("click", () => infoDialog.close()));
+      document.querySelector("#open-help").addEventListener("click", openHelpDialog);
+      document.querySelector("#open-notifications").addEventListener("click", openNotificationsDialog);
+      document.querySelector("#show-accounts").addEventListener("click", () => openAccountsDialog());
+      document.querySelector("#view-all-accounts").addEventListener("click", () => openAccountsDialog());
+      document.querySelectorAll("[data-account-details]").forEach(button => {
+        button.addEventListener("click", () => openAccountsDialog(button.dataset.accountDetails));
+      });
+      document.querySelectorAll("[data-pay-bill]").forEach(button => button.addEventListener("click", () => {
+        const bill = demoBills[button.dataset.payBill];
+        if (!bill || bill.paid) return;
+        openDialog("payment", "ACC-1001", { bill });
+      }));
+      document.querySelector("#contribute-goal").addEventListener("click", () => openDialog("goal"));
+      document.querySelector("#pay-loan").addEventListener("click", () => {
+        if (loan.outstanding > 0) openDialog("loanPayment");
+      });
+      document.querySelector("#card-lock").addEventListener("click", event => {
+        cardLocked = !cardLocked;
+        const button = event.currentTarget;
+        button.setAttribute("aria-checked", String(cardLocked));
+        button.setAttribute("aria-label", cardLocked ? "Unlock demo card" : "Lock demo card");
+        document.querySelector("#card-status").textContent = cardLocked ? "Card is locked" : "Card is active";
+        showToast(cardLocked ? "Demo card locked. No real card was affected." : "Demo card unlocked.");
+      });
+      document.querySelector("#export-activity").addEventListener("click", () => {
+        const escapeCsv = value => `"${String(value).replace(/"/g, '""')}"`;
+        const rows = Array.from(activityList.rows).filter(row => !row.hidden).map(row => Array.from(row.cells, cell => cell.textContent.trim()));
+        const csv = [["Transaction", "Account", "Date", "Status", "Amount"], ...rows].map(row => row.map(escapeCsv).join(",")).join("\r\n");
+        const url = URL.createObjectURL(new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8" }));
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "apex-transactions.csv";
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        showToast("Visible database activity exported as CSV.");
+      });
+      document.querySelectorAll(".nav a").forEach(link => link.addEventListener("click", () => {
+        document.querySelectorAll(".nav a").forEach(item => item.classList.toggle("active", item === link));
+      }));
+      document.querySelector("#toggle-balance").addEventListener("click", () => {
+        balancesVisible = !balancesVisible;
+        updateTotal();
+      });
+      document.querySelectorAll("[data-range]").forEach(button => button.addEventListener("click", () => {
+        const datasets = {
+          "7D": { values: [82, 76, 71, 65, 59, 56, 39], labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] },
+          "30D": { values: [93, 81, 87, 68, 72, 54, 39], labels: ["Week 1", "Week 2", "Week 3", "Week 4", "", "", ""] },
+          "90D": { values: [111, 98, 105, 78, 85, 60, 39], labels: ["Aug", "", "Sep", "", "Oct", "", "Today"] }
+        };
+        const { values, labels: rangeLabels } = datasets[button.dataset.range];
+        const x = [48, 150, 263, 374, 488, 601, 744];
+        const line = `M${x[0]} ${values[0]} ${x.slice(1).map((position, index) => `L${position} ${values[index + 1]}`).join(" ")}`;
+        document.querySelector("#chart-line").setAttribute("d", line);
+        document.querySelector("#chart-area").setAttribute("d", `${line} L744 145 L48 145 Z`);
+        document.querySelector("#chart-points").replaceChildren(...x.map((position, index) => {
+          const point = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          point.setAttribute("cx", String(position));
+          point.setAttribute("cy", String(values[index]));
+          point.setAttribute("r", "4");
+          return point;
+        }));
+        const labelsOnChart = Array.from(document.querySelectorAll(".chart g text")).slice(4);
+        labelsOnChart.forEach((label, index) => { label.textContent = rangeLabels[index]; });
+        document.querySelectorAll("[data-range]").forEach(tab => {
+          const selected = tab === button;
+          tab.classList.toggle("active", selected);
+          tab.setAttribute("aria-pressed", String(selected));
+        });
+      }));
+      activitySearch.addEventListener("input", filterActivity);
+      activityFilter.addEventListener("change", filterActivity);
+      const resetDemo = async () => {
+        cashFlow.incoming = 23000;
+        cashFlow.outgoing = 2500;
+        goalSaved = 42000;
+        Object.assign(loan, initialLoan, { nextDue: new Date(initialLoan.nextDue) });
+        cardLocked = false;
+        for (const bill of Object.values(demoBills)) bill.paid = false;
+        document.querySelectorAll("[data-bill-id]").forEach(row => {
+          row.querySelector(".bill-amount").hidden = false;
+          const payButton = row.querySelector("[data-pay-bill]");
+          payButton.hidden = false;
+          const paidLabel = row.querySelector(".bill-paid");
+          if (paidLabel) paidLabel.remove();
+        });
+        updateBillsCount();
+        document.querySelector("#card-lock").setAttribute("aria-checked", "false");
+        document.querySelector("#card-lock").setAttribute("aria-label", "Lock demo card");
+        document.querySelector("#card-status").textContent = "Card is active";
+        activityFilter.value = "all";
+        activitySearch.value = "";
+        try {
+          await refreshDatabaseData();
+          showToast("Preview widgets reset. Database accounts and transactions were not changed.");
+        } catch (error) {
+          showToast(`Unable to reload database data: ${error.message}`);
+        }
+      };
+      document.querySelector("#reset-demo").addEventListener("click", resetDemo);
+      form.addEventListener("submit", async event => {
+        event.preventDefault();
+        const amount = Number(document.querySelector("#amount").value);
+        const from = document.querySelector("#from-account").value;
+        const to = document.querySelector("#to-account").value;
+        if (!Number.isFinite(amount) || amount <= 0) {
+          showToast("Enter an amount greater than zero.");
+          return;
+        }
+        if (action === "transfer" && from === to) {
+          showToast("Choose two different accounts.");
+          return;
+        }
+        if (action === "transfer" && amount > balances[from]) {
+          showToast("Insufficient account balance for this transfer.");
+          return;
+        }
+        if ((action === "goal" || action === "payment") && amount > balances[from]) {
+          showToast("The selected account balance is too low for this preview action.");
+          return;
+        }
+        if (action === "loanPayment" && amount > balances[from]) {
+          showToast("The selected account balance is too low for this preview EMI.");
+          return;
+        }
+        if (action === "goal" && amount > goalTarget - goalSaved) {
+          showToast(`Your goal needs only ${format(goalTarget - goalSaved)} more.`);
+          return;
+        }
+        if (action === "deposit" || action === "transfer") {
+          const submitButton = document.querySelector("#submit-action");
+          submitButton.disabled = true;
+          try {
+            await fetchJson(action === "deposit" ? "/api/deposit" : "/api/transfer", {
+              method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+              body: new URLSearchParams(action === "deposit"
+                ? { accountNumber: from, amount: String(amount) }
+                : { fromAccount: from, toAccount: to, amount: String(amount) })
+            });
+            await refreshDatabaseData();
+            dialog.close();
+            showToast(action === "deposit" ? "Deposit saved to the local database." : "Transfer saved to the local database.");
+          } catch (error) {
+            showToast(`Operation failed: ${error.message}`);
+          } finally {
+            submitButton.disabled = false;
+          }
+          return;
+        }
+        if (action === "goal") {
+          goalSaved += amount;
+        } else if (action === "payment") {
+          const selectedBill = document.querySelector("#dialog-title").textContent.replace(/^Pay /, "");
+          const billEntry = Object.entries(demoBills).find(([, bill]) => bill.name === selectedBill);
+          if (!billEntry || billEntry[1].paid) {
+            showToast("This demo bill has already been paid.");
+            return;
+          }
+          billEntry[1].paid = true;
+          const billRow = document.querySelector(`[data-bill-id="${billEntry[0]}"]`);
+          billRow.querySelector(".bill-amount").hidden = true;
+          billRow.querySelector("[data-pay-bill]").hidden = true;
+          const paidLabel = document.createElement("span");
+          paidLabel.className = "bill-paid";
+          paidLabel.textContent = "Paid";
+          billRow.append(paidLabel);
+          updateBillsCount();
+        } else if (action === "loanPayment") {
+          if (loan.outstanding <= 0) {
+            showToast("This demo loan is already paid off.");
+            return;
+          }
+          const payment = Math.min(loan.emi, loan.outstanding);
+          loan.outstanding -= payment;
+          loan.installmentsPaid = Math.min(loan.installmentsPaid + 1, loan.totalInstallments);
+          loan.nextDue.setMonth(loan.nextDue.getMonth() + 1);
+        }
+        updateGoal();
+        updateLoan();
+        dialog.close();
+        showToast(action === "goal" ? "Preview savings goal updated." : action === "loanPayment" ? "Preview EMI payment recorded; no account was charged." : "Preview bill marked as paid; no account was charged.");
+      });
+      dialog.addEventListener("click", event => {
+        if (event.target === dialog) dialog.close();
+      });
+      infoDialog.addEventListener("click", event => {
+        if (event.target === infoDialog) infoDialog.close();
+      });
+      initializeDatabaseView();
+    })();
+  </script>
+</body>
+</html>
